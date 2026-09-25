@@ -313,7 +313,7 @@ class PluginService
     }
 
     /** @throws Exception */
-    public function updatePlugin(Plugin $plugin): void
+    public function updatePlugin(Plugin $plugin): Plugin
     {
         $downloadUrl = $plugin->getDownloadUrlForUpdate();
         throw_unless($downloadUrl, new Exception('No download url found.'));
@@ -321,11 +321,13 @@ class PluginService
         $this->downloadPluginFromUrl($downloadUrl, $plugin->id);
 
         Plugin::refreshRows();
-        $plugin = $plugin->refresh();
+        $plugin = Plugin::findOrFail($plugin->id);
 
         $this->installPlugin($plugin, false);
 
         cache()->forget("plugins.$plugin->id.update");
+
+        return $plugin;
     }
 
     /** @throws Exception */
